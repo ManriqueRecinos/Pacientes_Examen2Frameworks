@@ -1,0 +1,12 @@
+db\cn.class
+modelos\Doctor.class
+modelosDAO\DoctorDAO.class
+controladores\CitaController.class
+modelos\Cita.class
+com\mycompany\examenmanriqueycesar\JakartaRestConfiguration.class
+modelos\Paciente.class
+modelosDAO\CitaDAO.class
+controladores\DoctorController.class
+modelosDAO\PacienteDAO.class
+com\mycompany\examenmanriqueycesar\resources\JakartaEE10Resource.class
+controladores\controllerPaciente.class

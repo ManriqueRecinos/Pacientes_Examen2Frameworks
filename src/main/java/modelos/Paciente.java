@@ -10,7 +10,7 @@ public class Paciente {
     private int edad;
     private String direccionPaciente;
     
-    public Paciente() {
+    public Paciente(String nombrePaciente1, int id, String direccionPaciente1, int edad1) {
     }
 
     public Paciente(String nombrePaciente, int edad, String direccionPaciente) {

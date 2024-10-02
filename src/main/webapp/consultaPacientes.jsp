@@ -1,3 +1,4 @@
+<%@page import="modelos.Doctor"%>
 <%@page import="java.util.List"%>
 <%@page import="modelos.Paciente"%>
 <%@page import="controladores.controllerPaciente"%>
@@ -23,18 +24,24 @@
                 box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
                 margin-top: 40px;
             }
+            .btn-group-actions {
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
         </style>
     </head>
     <body>
         <%@ include file="menu.jsp" %>
 
         <div class="container mt-5">
-            <div class="bg-light p-3">
+            <div class="bg-light p-3 mb-4">
                 <h5>Información requerida: <small>Para registrar un nuevo paciente</small></h5>
             </div>
 
+            <!-- Formulario de registro -->
             <form method="post" action="/ExamenManriqueYCesar/paciente" class="mt-3">
-                <input type="text" name="accion" value="agregar" hidden>
+                <input type="hidden" name="accion" value="agregar">
 
                 <div class="mb-3">
                     <label for="nombrePaciente" class="form-label">Nombre del Paciente</label>
@@ -54,6 +61,7 @@
                 <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Agregar registro</button>
             </form>
 
+            <!-- Tabla de pacientes -->
             <table id="pacientesTable" class="table table-bordered mt-4">
                 <thead class="table-dark">
                     <tr>
@@ -75,19 +83,22 @@
                         <td><%= paciente.getNombrePaciente() %></td>
                         <td><%= paciente.getEdad() %></td>
                         <td><%= paciente.getDireccionPaciente() %></td>
-                        <td>
+                        <td class="btn-group-actions">
+                            <!-- Botón de agregar -->
+                            <button type="button" class="btn btn-sm btn-outline-success"
+                                    onclick="openAgreModal('<%= paciente.getIdPaciente() %>')">
+                                <i class="bi bi-plus-circle"></i> Agregar
+                            </button>
                             <!-- Botón de editar -->
                             <button type="button" class="btn btn-sm btn-outline-primary" 
                                     onclick="openEditModal('<%= paciente.getIdPaciente() %>', '<%= paciente.getNombrePaciente() %>', '<%= paciente.getEdad() %>', '<%= paciente.getDireccionPaciente() %>')">
-                                <i class="bi bi-pencil"></i>
+                                <i class="bi bi-pencil"></i> Editar
                             </button>
                             <!-- Botón de eliminar -->
-                            <button onclick="deletePaciente(<%= paciente.getIdPaciente() %>)">
-                              <i class="bi bi-trash"></i>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePaciente(<%= paciente.getIdPaciente() %>)">
+                                <i class="bi bi-trash"></i> Eliminar
                             </button>
-
                         </td>
-                        
                     </tr>
                     <%
                             }
@@ -136,32 +147,58 @@
                 </div>
             </div>
         </div>
+<!-- Modal para agregar cita médica -->
+<div class="modal fade" id="addCitaModal" tabindex="-1" aria-labelledby="addCitaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="addCitaModalLabel">Agregar Cita Médica</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="/ExamenManriqueYCesar/citas">
+                    <input type="hidden" name="accion" value="agregar">
+                    <input type="hidden" name="pacienteID" id="citaPacienteId"> <!-- Aquí asignaremos el ID del paciente -->
+
+                    <!-- Campo de Fecha -->
+                    <div class="mb-3">
+                        <label for="fechaCita" class="form-label">Fecha de la Cita</label>
+                        <input type="date" class="form-control" id="fechaCita" name="fechaCita" required>
+                    </div>
+
+                    <!-- Selector de Doctores -->
+                    <div class="mb-3">
+                        <label for="doctor" class="form-label">Seleccionar Doctor</label>
+                        <select class="form-select" id="doctor" name="doctorID" required>
+                            <option value="">Seleccione un doctor</option>
+                            <%
+                                List<Doctor> listaDoctores = (List<Doctor>) request.getAttribute("listaDoctores");
+                                if (listaDoctores != null) {
+                                    for (Doctor doctor : listaDoctores) {
+                            %>
+                            <option value="<%= doctor.getDoctorID() %>">
+                                <%= doctor.getNombre() %> - Especialidad: <%= doctor.getEspecialidad() %>
+                            </option>
+                            <%
+                                    }
+                                }
+                            %>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Agregar Cita</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
-         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-
-    <script>
-            function deletePaciente(id) {
-        if (confirm('¿Está seguro de que desea eliminar este paciente?')) {
-          const url = "/ExamenManriqueYCesar/paciente/" + id;
-
-          fetch(url, {
-            method: 'DELETE'
-          })
-            .then(response => {
-              if (response.ok) {
-                alert('Paciente eliminado exitosamente');
-                window.location.reload();
-              }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-      }
-    </script>
-    
         <script>
             $(document).ready(function() {
                 $('#pacientesTable').DataTable({
@@ -179,8 +216,31 @@
                 var editModal = new bootstrap.Modal(document.getElementById('editModal'));
                 editModal.show();
             }
-        </script>
+            
+            function openAgreModal(pacienteId) {
+                document.getElementById('citaPacienteId').value = pacienteId; // Asignar el ID del paciente al campo oculto
+                var addCitaModal = new bootstrap.Modal(document.getElementById('addCitaModal')); // Mostrar el modal correcto
+                addCitaModal.show();
+            }
 
-        
+
+
+            function deletePaciente(id) {
+                if (confirm('¿Está seguro de que desea eliminar este paciente?')) {
+                    const url = "/ExamenManriqueYCesar/paciente/" + id;
+
+                    fetch(url, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Paciente eliminado exitosamente');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            }
+        </script>
     </body>
 </html>
